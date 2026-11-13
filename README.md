@@ -6,21 +6,24 @@
 
 A fast, zero-dependency **Level-3 Limit Order Book** and **market microstructure math library** written in pure OCaml.
 
+
 Most open-source order books are either weekend toy scripts that fall over when you feed them floating-point numbers (`0.1 + 0.2 = 0.30000000000000004`, RIP your PnL), or massive C++ monsters that take three hours to compile.
 
 `Obook` sits in the sweet spot: **zero external dependencies**, **pre-allocated flat arrays** so the OCaml garbage collector stays out of your way, and a dead-simple API (`Obook.Ez`) so you can spin up an exchange matching engine in 5 lines of code.
 
----
 
-## Quick Honesty Note (Read This First) 🧠
-
-Let's be real: I built this project to bring a proper, plug-and-play order book and microstructure library to the OCaml ecosystem, **and I used AI to help validate the gnarly math and edge-case proofs** (128-bit integer division remainders, Welford's online variance stability, Cont's OFI, and VPIN bucket slicing) because I am frankly bad at doing 128-bit arithmetic proofs by hand at 2 AM without losing my mind.
-
-Every formula and matching rule isn't just "trust me bro"—it's backed by an automated invariant checker (`Book.audit`) and a **50,000-event randomized fuzzer** that checks volume conservation and book state after every order.
 
 ---
 
-## Show Me The Code (30-Second Quickstart)
+## Quick Honesty Note (Read This First)
+
+Let's be real: I built this project to bring a proper, plug-and-play order book and micro-structure library to the OCaml ecosystem, **and I have indeed used AI to help validate the complex maths and edge-case proofs** (128-bit integer division remainders, Welford's online variance stability, Cont's OFI, and VPIN bucket slicing) because I am frankly bad at doing arithmetic proofs by hand without killing myself.
+
+Every formula and matching rule isn't just "trust me bro"ish and it's backed by an automated invariant checker (`Book.audit`) and a **50,000-event randomized fuzzer** that checks volume conservation and book state after every order. SO it's nice if you can suggest changes or better things to add to it.
+
+---
+
+## Show Me The Money Shot (30-Second Quickstart)
 
 If you don't want to mess with fixed-point integers or order IDs, just use the top-level `Obook` (powered by `Obook.Ez`). Pass normal floats and it handles the rest:
 
@@ -48,7 +51,7 @@ let () =
   Obook.pp book
 ```
 
-### What That Prints:
+### What That Prints (VOILA):
 
 ```text
 Filled 20.00 SOL across 2 trades!
@@ -79,18 +82,27 @@ let payload : string = Obook.Ez.to_json ~levels:5 book
 If you *do* care about low-level systems stuff, here is what `Obook` actually does:
 
 * **`Obook.Fixed` (No Float Drift, No Overflows):**
-  All prices and sizes are stored as 64-bit integers scaled by $10^8$ (1 satoshi / pipette). If you multiply $\$100,000$ by $1,000\text{ BTC}$ in naive `int64`, you hit $10^{24}$ and overflow `Int64.max_int`. `Fixed` splits numbers into 128-bit intermediate chunks so multiplication and division don't blow up, and supports **Banker's Rounding (`Half_even`)**.
+  All prices and sizes are stored as 64-bit integers scaled by $10^8$ (1 satoshi / pipette). If you multiply $\$100,000$ by $1,000\text{ BTC}$ in naive `int64`, you hit $10^{24}$ and overflow `Int64.max_int`. `Fixed` splits numbers into 128-bit intermediate chunks so multiplication and division don't blow up, and supports
+
+**Banker's Rounding (`Half_even`)**.
 * **`Obook.Arena` (Zero-GC Order Pool):**
-  Pre-allocates flat arrays for resting orders plus an open-addressed hash table so looking up, cancelling, or shrinking an order by ID is strictly **$O(1)$** with zero heap allocation on the hot path.
+
+Pre-allocates flat arrays for resting orders plus an open-addressed hash table so looking up, cancelling, or shrinking an order by ID is strictly **$O(1)$** with zero 
+heap allocation on the hot path.
+
 * **`Obook.Book` (Real Exchange Rules):**
   * **Order Types:** `GTC`, `IOC`, `FOK`, and `Post_only` (maker-or-cancel).
   * **Zero-Mutation FOK Check:** Before executing a Fill-Or-Kill order, `Obook` does a read-only dry run across opposing price levels. If there isn't enough size, it rejects cleanly without mutating a single byte and trying to roll back.
+ 
+  
   * **Iceberg Priority Law:** Partial fills of the displayed tip keep their timestamp priority. Once the tip hits zero, it refills from the hidden stash and moves to the back of the FIFO queue for that price level (standard CME/NASDAQ behavior).
-  * **Self-Trade Prevention (STP):** Stop wash trades with `Cancel_newest`, `Cancel_oldest`, or `Decrement_and_cancel`.
+
+* **Self-Trade Prevention (STP):** Stop wash trades with `Cancel_newest`, `Cancel_oldest`, or `Decrement_and_cancel`.
 * **`Obook.Stats` (Streaming $O(1)$ Quant Math):**
-  No sliding arrays eating RAM. Includes **Welford’s running variance** (with Chan's parallel merge), **Finch’s EWMA volatility**, **Cont’s Order Flow Imbalance (OFI)**, **VPIN** (Volume-Synchronized Probability of Informed Trading, with multi-bucket slicing when a whale sweeps the book), and **Roll’s effective spread**.
+No sliding arrays eating RAM. Includes **Welford’s running variance** (with Chan's parallel merge), **Finch’s EWMA volatility**, **Cont’s Order Flow Imbalance (OFI)**, **VPIN** (Volume-Synchronized Probability of Informed Trading, with multi-bucket slicing when a whale sweeps the book), and **Roll’s effective spread**.
+
 * **`Obook.Itch` (NASDAQ ITCH 5.0 Wire Codec):**
-  Zero-copy big-endian binary parser and encoder (`S`, `A`, `E`, `X`, `D`, `U`) that feeds directly into `Book.t`.
+Zero-copy big-endian binary parser and encoder (`S`, `A`, `E`, `X`, `D`, `U`) that feeds directly into `Book.t`.
 
 ---
 
@@ -107,7 +119,7 @@ Trades Matched : 105106 (Vol: 582245.00)
 Book Audit     : PASS (0 violations)
 ```
 
-Around **2.4 million events/sec (~416 ns per operation)** in pure, type-safe OCaml.
+Around **2.4 million events/sec (~416 ns per operation)** in pure, type-safe cocaine.
 
 ---
 
@@ -159,4 +171,4 @@ dune exec examples/microstructure_toxic_flow.exe
 
 ## License
 
-MIT — do whatever you want with it, just don't blame me if your trading bot buys the top.
+MIT — do whatever you want with it, just don't blame me if your trading bot fucks some shit up.
