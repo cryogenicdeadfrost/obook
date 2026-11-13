@@ -1,4 +1,4 @@
 (library
  (name obook)
  (public_name obook)
- (modules fixed stats obook))
+ (modules fixed stats arena book obook))
