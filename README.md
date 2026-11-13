@@ -19,7 +19,9 @@ Most open-source order books are either weekend toy scripts that fall over when 
 
 Let's be real: I built this project to bring a proper, plug-and-play order book and micro-structure library to the OCaml ecosystem, **and I have indeed used AI to help validate the complex maths and edge-case proofs** (128-bit integer division remainders, Welford's online variance stability, Cont's OFI, and VPIN bucket slicing) because I am frankly bad at doing arithmetic proofs by hand without killing myself.
 
-Every formula and matching rule isn't just "trust me bro"ish and it's backed by an automated invariant checker (`Book.audit`) and a **50,000-event randomized fuzzer** that checks volume conservation and book state after every order. SO it's nice if you can suggest changes or better things to add to it.
+Every formula and matching rule isn't just "trust me bro"ish and it's backed by an automated invariant checker (`Book.audit`) and a **50,000-event randomized fuzzer** that checks volume conservation and book state after every order. SO it's nice if you can suggest changes or better things to add to it. 
+
+Truth be TOLD EVEN I DON"T KNOW HOW ALL OF THIS WORKS!!1
 
 ---
 
