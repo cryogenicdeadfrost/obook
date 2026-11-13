@@ -249,9 +249,78 @@ let test_fuzz_50k () =
   done;
   check_audit "fuzz final" b
 
+let test_itch_and_ez () =
+  let open Itch in
+  let msgs =
+    [
+      System_event { ts = 100L; code = 'O' };
+      Add_order
+        {
+          ts = 101L;
+          oid = 1001;
+          side = Bid;
+          qty = Fixed.of_int_exn 50;
+          symbol = "AAPL";
+          px = Fixed.of_str_exn "185.2500";
+        };
+      Add_order
+        {
+          ts = 102L;
+          oid = 1002;
+          side = Ask;
+          qty = Fixed.of_int_exn 40;
+          symbol = "AAPL";
+          px = Fixed.of_str_exn "185.5000";
+        };
+      Order_executed { ts = 103L; oid = 1001; exec_qty = Fixed.of_int_exn 20 };
+      Order_cancel { ts = 104L; oid = 1002; canc_qty = Fixed.of_int_exn 10 };
+      Order_replace
+        {
+          ts = 105L;
+          orig_oid = 1002;
+          new_oid = 1003;
+          new_qty = Fixed.of_int_exn 25;
+          new_px = Fixed.of_str_exn "185.4000";
+        };
+      Order_delete { ts = 106L; oid = 1001 };
+    ]
+  in
+  let wire = encode_all msgs in
+  (match decode_all wire with
+   | Error e ->
+     Printf.eprintf "[FAIL] ITCH decode_all: %s\n%!" e;
+     exit 1
+   | Ok decoded ->
+     check "ITCH roundtrip count = 7" (List.length decoded = 7);
+     let bk = Book.create ~symbol:"AAPL" () in
+     List.iter (Itch.apply bk) decoded;
+     check_audit "after ITCH stream apply" bk;
+     check "Only replaced Ask 1003 remains" (Book.order_count bk = 1);
+     match Book.best_ask bk with
+     | None -> check "best_ask exists" false
+     | Some (ap, aq) ->
+       check_feq "ITCH replaced ask px 185.40" (Fixed.to_f ap) 185.40;
+       check_feq "ITCH replaced ask qty 25" (Fixed.to_f aq) 25.0);
+
+  (* Ergonomic Ez interface check *)
+  let ez = Obook.book "SOL-USD" in
+  let bid_id, _ = Obook.bid ez ~px:150.0 ~qty:10.0 () in
+  let ask_id, _ = Obook.ask ez ~px:150.5 ~qty:20.0 () in
+  let mkt_rep = Obook.buy_mkt ez ~qty:5.0 () in
+  check "Ez market buy filled 5.0" (Fixed.to_f mkt_rep.filled_qty = 5.0);
+  check "Ez amend ask works" (Obook.amend ez ~id:ask_id ~px:150.5 ~qty:12.0);
+  check "Ez cancel bid works" (Obook.cancel ez bid_id);
+  let s = Obook.snap ez in
+  check "Ez active orders = 1" (s.active_orders = 1);
+  let json = Ez.to_json ez in
+  check "Ez JSON non-empty" (String.length json > 40);
+  let ascii = Ez.render_ascii ez in
+  check "Ez ASCII table non-empty" (String.length ascii > 100)
+
 let () =
   test_fixed ();
   test_stats ();
   test_book_mechanics ();
   test_fuzz_50k ();
-  Printf.printf "[OK] Iteration 2 (Arena & L3 Book + 50,000-event Fuzzer) all invariants verified.\n%!"
+  test_itch_and_ez ();
+  Printf.printf "[OK] Iteration 3 (ITCH 5.0 Codec, Ez Ergonomic API, Book & 50k Fuzzer) all invariants verified.\n%!"
