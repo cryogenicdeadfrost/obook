@@ -101,7 +101,7 @@ heap allocation on the hot path.
 
 * **Self-Trade Prevention (STP):** Stop wash trades with `Cancel_newest`, `Cancel_oldest`, or `Decrement_and_cancel`.
 * **`Obook.Stats` (Streaming $O(1)$ Quant Math):**
-No sliding arrays eating RAM. Includes **Welford’s running variance** (with Chan's parallel merge), **Finch’s EWMA volatility**, **Cont’s Order Flow Imbalance (OFI)**, **VPIN** (Volume-Synchronized Probability of Informed Trading, with multi-bucket slicing when a whale sweeps the book), and **Roll’s effective spread**.
+No sliding arrays eating RAM. Includes **Welford's running variance** (with Chan's parallel merge), **Finch's EWMA volatility**, **Cont's Order Flow Imbalance (OFI)**, **VPIN** (Volume-Synchronized Probability of Informed Trading, with multi-bucket slicing when a whale sweeps the book), and **Roll's effective spread**.
 
 * **`Obook.Itch` (NASDAQ ITCH 5.0 Wire Codec):**
 Zero-copy big-endian binary parser and encoder (`S`, `A`, `E`, `X`, `D`, `U`) that feeds directly into `Book.t`.
@@ -162,15 +162,15 @@ dune exec examples/microstructure_toxic_flow.exe
 
 ## Project Layout
 
-* [`lib/ez.mli`](lib/ez.mli) — The chill, float-based API (`Obook.book`, `Obook.bid`, `Obook.ask`, `Obook.pp`, `Obook.Ez.to_json`).
-* [`lib/book.mli`](lib/book.mli) — Full L3 matching engine (`GTC`, `IOC`, `FOK`, `Post_only`, Iceberg, STP, `audit`).
-* [`lib/fixed.mli`](lib/fixed.mli) — $10^8$ fixed-point numbers & `Fixed.O` infix operators (`+~`, `-~`, `*~`, `/~`).
-* [`lib/stats.mli`](lib/stats.mli) — `Welford`, `Ewma`, `Ofi`, `Vpin`, and `Roll`.
-* [`lib/itch.mli`](lib/itch.mli) — NASDAQ TotalView-ITCH 5.0 binary encoder/decoder.
-* [`docs/MATH_SPEC.md`](docs/MATH_SPEC.md) — The nerd sheet with all the math formulas and invariants.
+* [`lib/ez.mli`](lib/ez.mli) -- The chill, float-based API (`Obook.book`, `Obook.bid`, `Obook.ask`, `Obook.pp`, `Obook.Ez.to_json`).
+* [`lib/book.mli`](lib/book.mli) -- Full L3 matching engine (`GTC`, `IOC`, `FOK`, `Post_only`, Iceberg, STP, `audit`).
+* [`lib/fixed.mli`](lib/fixed.mli) -- $10^8$ fixed-point numbers & `Fixed.O` infix operators (`+~`, `-~`, `*~`, `/~`).
+* [`lib/stats.mli`](lib/stats.mli) -- `Welford`, `Ewma`, `Ofi`, `Vpin`, and `Roll`.
+* [`lib/itch.mli`](lib/itch.mli) -- NASDAQ TotalView-ITCH 5.0 binary encoder/decoder.
+* [`docs/MATH_SPEC.md`](docs/MATH_SPEC.md) -- The nerd sheet with all the math formulas and invariants.
 
 ---
 
 ## License
 
-MIT — do whatever you want with it, just don't blame me if your trading bot fucks some shit up.
+MIT -- do whatever you want with it, just don't blame me if your trading bot fucks some shit up.

@@ -39,13 +39,13 @@ To compute $\lfloor (r_0 \times S) / u_b \rfloor$ and $(r_0 \times S) \bmod u_b$
 
 ## 3. Streaming Microstructure Estimators (`Obook.Stats`)
 
-### 3.1 Welford’s Recurrence & Chan’s Parallel Merge
+### 3.1 Welford's Recurrence & Chan's Parallel Merge
 For sample $x_n$:
 $$\delta = x_n - \mu_{n-1}, \quad \mu_n = \mu_{n-1} + \frac{\delta}{n}, \quad M_{2,n} = M_{2,n-1} + \delta(x_n - \mu_n), \quad s^2_n = \frac{M_{2,n}}{n - 1}$$
 Two independent partitions $(n_A, \mu_A, M_{2,A})$ and $(n_B, \mu_B, M_{2,B})$ merge in $O(1)$ via:
 $$M_{2,AB} = M_{2,A} + M_{2,B} + (\mu_B - \mu_A)^2 \frac{n_A n_B}{n_A + n_B}$$
 
-### 3.2 Finch’s Bias-Free EWMA Variance
+### 3.2 Finch's Bias-Free EWMA Variance
 Seeded with $\mu_1 = x_1, \sigma^2_1 = 0$, and updated for $t \ge 2$ with decay $\alpha \in (0, 1)$:
 $$\delta_t = x_t - \mu_{t-1}, \quad \mu_t = \mu_{t-1} + \alpha \delta_t, \quad \sigma^2_t = (1 - \alpha)(\sigma^2_{t-1} + \alpha \delta_t^2)$$
 
